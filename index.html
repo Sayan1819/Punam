@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ColourCraft Painters</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=Figtree:wght@400;500;600&display=swap">
+<style>
+/* Layout: sticky nav, three hash-routed views; hero pairs the headline with a paint-fan stack of real colour swatches */
+:root{
+  --bg:#f6f7fa;
+  --surface:#ffffff;
+  --fg:#14213d;
+  --muted:#515c75;
+  --line:#d9dde8;
+  --accent:#d9482b;
+  --accent-fg:#ffffff;
+  --font-display:"Familjen Grotesk","Trebuchet MS",system-ui,sans-serif;
+  --font-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1427;--surface:#151f38;--fg:#e8ecf7;--muted:#a0abc6;--line:#26324f;
+    --accent:#ff7a59;--accent-fg:#2a0d04;color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1427;--surface:#151f38;--fg:#e8ecf7;--muted:#a0abc6;--line:#26324f;
+  --accent:#ff7a59;--accent-fg:#2a0d04;color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:16px;line-height:1.6;
+  padding-block:0 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:980px;margin:0 auto}
+h1,h2,h3{font-family:var(--font-display);line-height:1.05;margin:0;text-wrap:balance;letter-spacing:-.025em}
+p{margin:0}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:4px}
+
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 20px;padding-block:14px}
+.brand{font-family:var(--font-display);font-weight:700;font-size:1.3rem;letter-spacing:-.03em;text-decoration:none;display:flex;align-items:center;gap:10px}
+.logo{display:grid;grid-template-columns:repeat(3,1fr);width:30px;height:30px;border-radius:7px;overflow:hidden}
+.logo i:nth-child(1){background:#d9482b}.logo i:nth-child(2){background:#f2b84b}.logo i:nth-child(3){background:#3a7ca5}
+nav{display:flex;gap:4px}
+nav a{text-decoration:none;font-weight:600;font-size:.95rem;padding:8px 14px;border-radius:999px;color:var(--muted)}
+nav a:hover{color:var(--fg)}
+nav a[aria-current="page"]{background:var(--fg);color:var(--bg)}
+
+.view{display:none;padding-top:40px}
+.view.on{display:block}
+.eyebrow{font-size:.78rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+
+.hero{display:grid;grid-template-columns:1.3fr 1fr;gap:36px;align-items:center}
+.hero-copy{display:flex;flex-direction:column;gap:20px;min-width:0}
+.hero h1{font-size:clamp(2.6rem,8vw,5rem);font-weight:700}
+.hero .lead{font-size:1.15rem;color:var(--muted);max-width:44ch}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px}
+.btn{
+  display:inline-block;font:inherit;font-weight:600;text-decoration:none;cursor:pointer;
+  padding:13px 24px;border-radius:10px;border:2px solid var(--accent);background:var(--accent);color:var(--accent-fg);
+}
+.btn.ghost{background:transparent;color:var(--fg);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--fg)}
+
+/* paint fan */
+.fan{display:flex;gap:8px;height:300px;min-width:0}
+.chip{flex:1;border-radius:12px;padding:12px 10px;display:flex;flex-direction:column;justify-content:flex-end;color:#fff;min-width:0;overflow:hidden}
+.chip b{font-family:var(--font-display);font-size:.95rem;line-height:1.15;overflow-wrap:anywhere}
+.chip span{font-size:.7rem;opacity:.9;letter-spacing:.05em}
+.chip.dark-text{color:#1b1b1b}
+.chip:nth-child(1){margin-top:0}.chip:nth-child(2){margin-top:28px}.chip:nth-child(3){margin-top:56px}.chip:nth-child(4){margin-top:28px}.chip:nth-child(5){margin-top:0}
+
+.strip{margin-top:36px;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.strip div{padding:16px 20px;min-width:0}
+.strip div+div{border-left:1px solid var(--line)}
+.strip dt{font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.strip dd{margin:2px 0 0;font-weight:600}
+@media (max-width:640px){.strip div+div{border-left:0;border-top:1px solid var(--line)}}
+
+section.block{margin-top:60px}
+.block-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end;gap:8px 24px;margin-bottom:22px}
+.block-head h2{font-size:clamp(1.7rem,4.5vw,2.4rem)}
+.block-head p{color:var(--muted);max-width:44ch}
+
+.services{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+.svc{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.svc .dot{width:34px;height:8px;border-radius:99px}
+.svc h3{font-size:1.2rem}
+.svc p{color:var(--muted);font-size:.95rem}
+.svc .meta{margin-top:auto;padding-top:10px;font-size:.85rem;font-weight:600;font-variant-numeric:tabular-nums}
+
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.steps li{border-top:3px solid var(--fg);padding-top:12px}
+.steps b{font-family:var(--font-display);font-size:1.1rem;display:block;margin-bottom:4px}
+.steps span{color:var(--muted);font-size:.95rem}
+
+.banner{margin-top:60px;background:var(--fg);color:var(--bg);border-radius:20px;padding:32px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px 32px}
+.banner h2{font-size:clamp(1.5rem,4vw,2.1rem);max-width:20ch}
+.banner .btn{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+
+.page-title{font-size:clamp(2.2rem,6.5vw,3.8rem);font-weight:700;max-width:16ch;margin-top:8px}
+.prose{max-width:65ch;display:flex;flex-direction:column;gap:16px;margin-top:24px}
+.prose p{color:var(--muted);font-size:1.05rem}
+.prose p:first-child{color:var(--fg);font-size:1.2rem}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.fact{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;min-width:0}
+.fact h3{font-size:1.15rem;margin-bottom:6px}
+.fact p{color:var(--muted);font-size:.95rem}
+.team{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.person{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;min-width:0}
+.avatar{width:48px;height:48px;border-radius:50%;color:#fff;display:grid;place-items:center;font-family:var(--font-display);font-weight:700;margin-bottom:12px}
+.person h3{font-size:1.05rem}
+.person p{color:var(--muted);font-size:.92rem}
+
+.contact-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:28px;margin-top:28px;align-items:start}
+@media (max-width:780px){.hero,.contact-grid{grid-template-columns:1fr}.fan{height:220px}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px;min-width:0}
+form{display:flex;flex-direction:column;gap:16px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:480px){.row2{grid-template-columns:1fr}}
+label{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:.92rem;min-width:0}
+input,select,textarea{font:inherit;font-weight:400;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 12px;width:100%}
+textarea{min-height:110px;resize:vertical}
+.note{font-size:.85rem;color:var(--muted)}
+.ok{background:var(--fg);color:var(--bg);padding:12px 14px;border-radius:10px;font-weight:500}
+.err{color:var(--accent);font-weight:600;font-size:.9rem}
+dl.info{margin:0;display:flex;flex-direction:column;gap:18px}
+dl.info dt{font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+dl.info dd{margin:2px 0 0;font-weight:500;overflow-wrap:anywhere}
+.maplink{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:20px;padding:14px 16px;border:1px dashed var(--line);border-radius:12px;text-decoration:none;font-weight:600}
+.maplink:hover{border-color:var(--fg)}
+.hours{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.hours td{padding:6px 0;border-bottom:1px dashed var(--line)}
+.hours td:last-child{text-align:right}
+
+footer{margin-top:64px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:.88rem;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px}
+@media (prefers-reduced-motion:no-preference){.view.on{animation:rise .35s ease-out}}
+@keyframes rise{from{opacity:.001;transform:translateY(6px)}to{opacity:1;transform:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="bar">
+      <a class="brand" href="#home"><span class="logo" aria-hidden="true"><i></i><i></i><i></i></span>ColourCraft Painters</a>
+      <nav aria-label="Main">
+        <a href="#home" data-link="home">Home</a>
+        <a href="#about" data-link="about">About Us</a>
+        <a href="#contact" data-link="contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+  <!-- HOME -->
+  <div class="view" id="v-home">
+    <div class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow">Interior and exterior painting</span>
+        <h1>Colour Your Space. We Do the Rest.</h1>
+        <p class="lead">Neat, on-time interior and exterior painting for homes, shops and offices.</p>
+        <div class="cta-row">
+          <a class="btn" href="#contact">Get Free Quote</a>
+          <a class="btn ghost" href="#services">Our services</a>
+        </div>
+      </div>
+      <div class="fan" aria-hidden="true">
+        <div class="chip" style="background:#d9482b"><b>Terracotta Dusk</b><span>CC-101</span></div>
+        <div class="chip dark-text" style="background:#f2b84b"><b>Marigold Noon</b><span>CC-214</span></div>
+        <div class="chip" style="background:#3a7ca5"><b>Harbour Blue</b><span>CC-330</span></div>
+        <div class="chip dark-text" style="background:#a9c5a0"><b>Sage Mist</b><span>CC-412</span></div>
+        <div class="chip" style="background:#3b3b4f"><b>Slate Night</b><span>CC-505</span></div>
+      </div>
+    </div>
+
+    <dl class="strip">
+      <div><dt>Site visit</dt><dd>Free, within 24 hours</dd></div>
+      <div><dt>Finish</dt><dd>Matt, satin or gloss</dd></div>
+      <div><dt>Coverage</dt><dd>Up to 120 sq ft per litre</dd></div>
+      <div><dt>Warranty</dt><dd>2 years on workmanship</dd></div>
+    </dl>
+
+    <section class="block" id="services">
+      <div class="block-head">
+        <h2>What we paint</h2>
+        <p>Sample rates in ₹ per sq ft of paintable wall, including labour and two coats.</p>
+      </div>
+      <div class="services">
+        <div class="svc"><span class="dot" style="background:#d9482b"></span><h3>Homes</h3><p>Bedrooms, living rooms, kitchens and balconies. Furniture is covered and moved back.</p><span class="meta">From ₹18 / sq ft</span></div>
+        <div class="svc"><span class="dot" style="background:#f2b84b"></span><h3>Shops</h3><p>Fast repaints that finish overnight so you open on time the next morning.</p><span class="meta">From ₹16 / sq ft</span></div>
+        <div class="svc"><span class="dot" style="background:#3a7ca5"></span><h3>Offices</h3><p>Phased work by floor or department so your team keeps working.</p><span class="meta">From ₹15 / sq ft</span></div>
+        <div class="svc"><span class="dot" style="background:#a9c5a0"></span><h3>Exteriors</h3><p>Weatherproof coats with crack filling and damp treatment before painting.</p><span class="meta">From ₹22 / sq ft</span></div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="block-head"><h2>How a job runs</h2></div>
+      <ol class="steps">
+        <li><b>Visit and measure</b><span>We come to the site, measure the walls and note repairs needed.</span></li>
+        <li><b>Quote and colours</b><span>You get a written quote and pick shades from our fan deck.</span></li>
+        <li><b>Prep and paint</b><span>Sanding, putty, primer, then two finish coats.</span></li>
+        <li><b>Clean-up and check</b><span>We clean the site and walk through it with you before we leave.</span></li>
+      </ol>
+    </section>
+
+    <div class="banner">
+      <h2>Tell us the size of the room. We will tell you the cost.</h2>
+      <a class="btn" href="#contact">Get Free Quote</a>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <div class="view" id="v-about">
+    <span class="eyebrow">About Us</span>
+    <h1 class="page-title">Painters who turn up on time.</h1>
+    <div class="prose">
+      <p>ColourCraft Painters started in 2018 with two painters and a simple promise: finish when we say we will, and leave the place cleaner than we found it.</p>
+      <p>Today a crew of 24 handles homes, shops and offices across Kolkata. Every site gets a supervisor, a written schedule and a final walk-through with you.</p>
+      <p>We use branded paints only, mix colours by code so touch-ups match later, and cover every floor and fitting before we open a tin.</p>
+    </div>
+
+    <section class="block">
+      <div class="block-head"><h2>What we promise</h2></div>
+      <div class="facts">
+        <div class="fact"><h3>On-time delivery</h3><p>If we finish late because of us, you get 5% off the final bill for each day.</p></div>
+        <div class="fact"><h3>Neat work</h3><p>Sharp edges, masked fittings and no paint on your floors or furniture.</p></div>
+        <div class="fact"><h3>Clear pricing</h3><p>The quote lists area, coats and paint brand. Nothing is added later without your approval.</p></div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="block-head"><h2>The team</h2></div>
+      <div class="team">
+        <div class="person"><div class="avatar" style="background:#d9482b">VR</div><h3>Vikram Rao</h3><p>Founder. Leads site visits and quotes.</p></div>
+        <div class="person"><div class="avatar" style="background:#3a7ca5">NB</div><h3>Neha Bose</h3><p>Colour consultant. Helps you choose shades.</p></div>
+        <div class="person"><div class="avatar" style="background:#3b3b4f">SD</div><h3>Sanjay Das</h3><p>Head supervisor. Runs the crews on site.</p></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- CONTACT -->
+  <div class="view" id="v-contact">
+    <span class="eyebrow">Contact</span>
+    <h1 class="page-title">Get your free quote.</h1>
+    <div class="contact-grid">
+      <div class="card">
+        <form id="contact-form" novalidate>
+          <div class="row2">
+            <label for="f-name">Your name
+              <input id="f-name" type="text" autocomplete="name" placeholder="e.g. Priya Das" required>
+            </label>
+            <label for="f-phone">Phone
+              <input id="f-phone" type="tel" autocomplete="tel" placeholder="98XXX XXXXX" required>
+            </label>
+          </div>
+          <label for="f-email">Email
+            <input id="f-email" type="email" autocomplete="email" placeholder="you@example.com">
+          </label>
+          <div class="row2">
+            <label for="f-type">Type of job
+              <select id="f-type">
+                <option>Home interior</option>
+                <option>Home exterior</option>
+                <option>Shop</option>
+                <option>Office</option>
+              </select>
+            </label>
+            <label for="f-area">Approx. area (sq ft)
+              <input id="f-area" type="number" min="0" inputmode="numeric" placeholder="e.g. 1200">
+            </label>
+          </div>
+          <label for="f-msg">Details
+            <textarea id="f-msg" placeholder="Preferred dates, colours, any repairs needed."></textarea>
+          </label>
+          <button class="btn" type="submit">Get Free Quote</button>
+          <p class="note">This is a sample form for a course practical. Nothing is sent anywhere.</p>
+          <div id="form-status" role="status" aria-live="polite"></div>
+        </form>
+      </div>
+
+      <div class="card">
+        <dl class="info">
+          <div><dt>Address</dt><dd>Shop 7, Rangoli Plaza, Sector V<br>Salt Lake, Kolkata 700091</dd></div>
+          <div><dt>Phone</dt><dd>+91 98XXX XXXXX</dd></div>
+          <div><dt>Email</dt><dd>hello@colourcraft.example</dd></div>
+          <div><dt>Working hours</dt><dd>
+            <table class="hours">
+              <tr><td>Mon to Sat</td><td>9:00 a.m. to 7:00 p.m.</td></tr>
+              <tr><td>Sunday</td><td>By appointment</td></tr>
+            </table>
+          </dd></div>
+        </dl>
+        <a class="maplink" href="https://www.google.com/maps/search/?api=1&query=Salt+Lake+Sector+V+Kolkata" target="_blank" rel="noopener"><span>Open in Google Maps</span><span aria-hidden="true">↗</span></a>
+      </div>
+    </div>
+  </div>
+  </main>
+
+  <footer>
+    <span>ColourCraft Painters is a fictional business created for a Digital Marketing practical.</span>
+    <span>Sample website, Practical No. 7</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var views = ["home","about","contact"];
+  function show(){
+    var h = (location.hash || "").replace("#","");
+    var target = h === "services" ? "home" : (views.indexOf(h) > -1 ? h : "home");
+    views.forEach(function(v){ document.getElementById("v-"+v).classList.toggle("on", v === target); });
+    document.querySelectorAll("[data-link]").forEach(function(a){
+      if (a.getAttribute("data-link") === target) a.setAttribute("aria-current","page");
+      else a.removeAttribute("aria-current");
+    });
+    if (h === "services") { document.getElementById("services").scrollIntoView(); }
+    else { window.scrollTo(0,0); }
+  }
+  window.addEventListener("hashchange", show);
+  show();
+
+  var form = document.getElementById("contact-form");
+  var status = document.getElementById("form-status");
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    var name = document.getElementById("f-name").value.trim();
+    var phone = document.getElementById("f-phone").value.replace(/\D/g,"");
+    status.innerHTML = "";
+    var p = document.createElement("p");
+    if (!name || phone.length < 10) {
+      p.className = "err";
+      p.textContent = "Enter your name and a 10-digit phone number, then try again.";
+    } else {
+      p.className = "ok";
+      p.textContent = "Thanks, " + name + ". On a live site, our team would now call you within 24 hours to book a visit.";
+      form.reset();
+    }
+    status.appendChild(p);
+  });
+})();
+</script>
+
+</html>
